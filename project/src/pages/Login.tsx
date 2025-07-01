@@ -1,124 +1,143 @@
-import React from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Link } from 'react-router-dom';
-import { Mail, Lock, User } from 'lucide-react';
-
-const loginSchema = z.object({
-  email: z.string().email('Email invalide'),
-  password: z.string().min(6, 'Le mot de passe doit contenir au moins 6 caractères'),
-});
-
-type LoginFormData = z.infer<typeof loginSchema>;
+import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 
 const Login: React.FC = () => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema)
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    remember: false
   });
 
-  const onSubmit = async (data: LoginFormData) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = e.target;
+    setFormData({
+      ...formData,
+      [name]: type === 'checkbox' ? checked : value
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setIsLoading(true);
+
     try {
+      // Simulation d'une connexion (remplacer par votre API)
       await new Promise(resolve => setTimeout(resolve, 1000));
-      console.log('Données de connexion:', data);
-      alert('Connexion réussie !');
-    } catch (error) {
-      console.error('Erreur de connexion:', error);
+      
+      // Pour la démo, accepter n'importe quel email/password
+      console.log('Connexion réussie:', formData);
+      
+      // Rediriger vers la page d'accueil après connexion
+      navigate('/');
+      
+    } catch (err) {
+      setError('Email ou mot de passe incorrect');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="bg-warm-gray min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div className="bg-white rounded-xl shadow-lg p-8">
-          {/* En-tête */}
+    <div className="min-h-screen bg-warm-gray flex items-center justify-center py-12 px-4">
+      <div className="max-w-md w-full">
+        <div className="bg-white rounded-lg shadow-xl p-8">
           <div className="text-center mb-8">
-            <User className="h-12 w-12 text-golden-orange mx-auto mb-4" />
-            <h2 className="text-3xl font-bold text-forest-green">Connexion</h2>
+            <h1 className="text-3xl font-bold text-deep-plum">{t('login.title')}</h1>
             <p className="text-gray-600 mt-2">Accédez à votre espace client</p>
           </div>
 
-          {/* Formulaire */}
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {error && (
+            <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="flex items-center space-x-2 text-sm font-medium text-forest-green mb-2">
-                <Mail className="h-4 w-4" />
-                <span>Adresse email</span>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                Adresse email
               </label>
-              <input
-                type="email"
-                {...register('email')}
-                placeholder="votre@email.com"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-golden-orange focus:border-transparent"
-              />
-              {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green"
+                  placeholder="vous@exemple.com"
+                />
+              </div>
             </div>
 
             <div>
-              <label className="flex items-center space-x-2 text-sm font-medium text-forest-green mb-2">
-                <Lock className="h-4 w-4" />
-                <span>Mot de passe</span>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                Mot de passe
               </label>
-              <input
-                type="password"
-                {...register('password')}
-                placeholder="••••••••"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-golden-orange focus:border-transparent"
-              />
-              {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  className="w-full pl-10 pr-12 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-green"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
             </div>
 
             <div className="flex items-center justify-between">
-              <div className="flex items-center">
+              <label className="flex items-center">
                 <input
-                  id="remember-me"
-                  name="remember-me"
                   type="checkbox"
-                  className="h-4 w-4 text-golden-orange focus:ring-golden-orange border-gray-300 rounded"
+                  name="remember"
+                  checked={formData.remember}
+                  onChange={handleChange}
+                  className="h-4 w-4 text-forest-green focus:ring-forest-green border-gray-300 rounded"
                 />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-600">
-                  Se souvenir de moi
-                </label>
-              </div>
-
-              <div className="text-sm">
-                <a href="#" className="text-golden-orange hover:text-golden-orange/80 transition-colors duration-200">
-                  Mot de passe oublié ?
-                </a>
-              </div>
+                <span className="ml-2 text-sm text-gray-600">Se souvenir de moi</span>
+              </label>
+              <a href="#" className="text-sm text-forest-green hover:underline">
+                Mot de passe oublié ?
+              </a>
             </div>
 
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="w-full bg-golden-orange text-white font-medium py-3 px-4 rounded-lg hover:bg-golden-orange/90 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-golden-orange focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isLoading}
+              className="w-full bg-forest-green text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? 'Connexion...' : 'Se connecter'}
+              {isLoading ? 'Connexion en cours...' : 'Se connecter'}
             </button>
           </form>
 
-          {/* Liens */}
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
               Pas encore de compte ?{' '}
-              <Link to="/register" className="text-golden-orange hover:text-golden-orange/80 transition-colors duration-200 font-medium">
+              <a href="/register" className="text-forest-green font-semibold hover:underline">
                 Créer un compte
-              </Link>
+              </a>
             </p>
-          </div>
-
-          {/* Accès rapide au tableau de bord */}
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <Link
-              to="/dashboard"
-              className="w-full bg-forest-green text-white font-medium py-2 px-4 rounded-lg hover:bg-forest-green/90 transition-colors duration-200 text-center block"
-            >
-              Accéder au tableau de bord (démo)
-            </Link>
           </div>
         </div>
       </div>

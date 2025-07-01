@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { BookingWizard, BookingConfirmation } from '../components/booking';
 import { Booking } from '../types/booking.types';
 import { useBooking } from '../hooks/useBooking';
 
 const BookingPage: React.FC = () => {
+  const { t } = useTranslation();
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [confirmedBooking, setConfirmedBooking] = useState<Booking | null>(null);
   const { generateQuotePDF } = useBooking();
 
-  // Callback après soumission réussie du formulaire
   const handleBookingComplete = async (booking: Booking) => {
     try {
       const response = await fetch('http://localhost:5000/api/bookings', {
@@ -20,7 +21,7 @@ const BookingPage: React.FC = () => {
       if (response.ok) {
         const data = await response.json();
         console.log('Réservation créée avec succès:', data);
-        booking.id = data.bookingId; // mettre à jour l'ID reçu
+        booking.id = data.bookingId;
       } else {
         console.warn('Réponse non valide du serveur:', response.status);
       }
@@ -28,15 +29,11 @@ const BookingPage: React.FC = () => {
       console.error('Erreur lors de l\'envoi au backend:', error);
     }
 
-    // Afficher la confirmation (même si erreur)
     setConfirmedBooking(booking);
     setIsConfirmed(true);
-    
-    // Scroll en haut de la page
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Télécharger le PDF
   const handleDownloadPDF = async () => {
     if (!confirmedBooking) return;
 
@@ -53,12 +50,10 @@ const BookingPage: React.FC = () => {
     }
   };
 
-  // Imprimer
   const handlePrint = () => {
     window.print();
   };
 
-  // Partager
   const handleShare = async () => {
     if (!confirmedBooking) return;
 
@@ -87,11 +82,10 @@ const BookingPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-warm-gray">
-      {/* Header */}
       <div className="bg-forest-green text-white py-8">
         <div className="container mx-auto px-6">
           <h1 className="text-3xl md:text-4xl font-bold text-center">
-            {isConfirmed ? 'Réservation Confirmée' : 'Réserver un Service'}
+            {isConfirmed ? 'Réservation Confirmée' : t('booking.title')}
           </h1>
           <p className="text-center mt-2 text-green-100">
             {isConfirmed
@@ -101,11 +95,9 @@ const BookingPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Contenu principal */}
       <div className="container mx-auto px-6 py-12">
         {!isConfirmed ? (
           <>
-            {/* Breadcrumb */}
             <nav className="mb-8 text-sm">
               <ol className="flex items-center space-x-2">
                 <li>
@@ -116,10 +108,8 @@ const BookingPage: React.FC = () => {
               </ol>
             </nav>
 
-            {/* Wizard */}
             <BookingWizard onComplete={handleBookingComplete} />
 
-            {/* Avantages */}
             <div className="mt-12 grid md:grid-cols-3 gap-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
                 <h3 className="font-semibold text-lg mb-2 text-deep-plum">💯 Satisfaction Garantie</h3>

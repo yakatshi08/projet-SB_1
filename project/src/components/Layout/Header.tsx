@@ -1,12 +1,11 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Menu, X, Sparkles } from 'lucide-react';
+import { Sparkles, Menu, X } from 'lucide-react';
 
 const Header: React.FC = () => {
+  const { t } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-  const { t, i18n } = useTranslation();
-  const location = useLocation();
 
   const navigation = [
     { name: t('nav.home'), href: '/' },
@@ -15,18 +14,14 @@ const Header: React.FC = () => {
     { name: t('nav.login'), href: '/login' },
   ];
 
-  const toggleLanguage = () => {
-    i18n.changeLanguage(i18n.language === 'fr' ? 'en' : 'fr');
-  };
-
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200">
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+    <header className="bg-white shadow-sm sticky top-0 z-50">
+      <nav className="container mx-auto px-6 py-4">
+        <div className="flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <Sparkles className="h-8 w-8 text-golden-orange" />
-            <span className="text-xl font-bold text-forest-green">SB-Nettoyage</span>
+            <Sparkles className="h-8 w-8 text-warm-gold" />
+            <span className="text-2xl font-bold text-deep-plum">SB-Nettoyage</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -35,62 +30,42 @@ const Header: React.FC = () => {
               <Link
                 key={item.name}
                 to={item.href}
-                className={`text-sm font-medium transition-colors duration-200 hover:text-golden-orange ${
-                  location.pathname === item.href
-                    ? 'text-golden-orange'
-                    : 'text-forest-green'
-                }`}
+                className="text-gray-700 hover:text-forest-green transition-colors duration-200 font-medium"
+                aria-label={item.name}
               >
                 {item.name}
               </Link>
             ))}
-            
-            {/* Language Toggle */}
-            <button
-              onClick={toggleLanguage}
-              className="flex items-center space-x-1 text-sm font-medium text-forest-green hover:text-golden-orange transition-colors duration-200"
-            >
-              <span className="text-lg">{i18n.language === 'fr' ? '🇫🇷' : '🇬🇧'}</span>
-              <span>{i18n.language === 'fr' ? 'FR' : 'EN'}</span>
-            </button>
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden">
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-forest-green hover:text-golden-orange transition-colors duration-200"
-            >
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
-          </div>
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="md:hidden"
+            aria-label="Toggle menu"
+          >
+            {isMenuOpen ? (
+              <X className="h-6 w-6 text-gray-700" />
+            ) : (
+              <Menu className="h-6 w-6 text-gray-700" />
+            )}
+          </button>
         </div>
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200">
+          <div className="md:hidden mt-4 pb-4">
+            <div className="flex flex-col space-y-4">
               {navigation.map((item) => (
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`block px-3 py-2 text-base font-medium transition-colors duration-200 hover:text-golden-orange ${
-                    location.pathname === item.href
-                      ? 'text-golden-orange'
-                      : 'text-forest-green'
-                  }`}
+                  className="text-gray-700 hover:text-forest-green transition-colors duration-200 font-medium"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {item.name}
                 </Link>
               ))}
-              <button
-                onClick={toggleLanguage}
-                className="flex items-center space-x-2 px-3 py-2 text-base font-medium text-forest-green hover:text-golden-orange transition-colors duration-200"
-              >
-                <span className="text-lg">{i18n.language === 'fr' ? '🇫🇷' : '🇬🇧'}</span>
-                <span>{i18n.language === 'fr' ? 'Français' : 'English'}</span>
-              </button>
             </div>
           </div>
         )}
